@@ -42,9 +42,12 @@
              `(def-command ,(file-namestring path) ,path)))))
 
 (def-commands "~/local/opt/ec2-api-tools/bin/")
-(ec2ver)
+;;(ec2ver)
 ;;=> T
 ;;   0
 ;;   "1.5.2.5 2012-03-01
 ;;   "
 ;;   ""
+
+(def-commands "~/local/opt/AutoScaling/bin/")
+;;(as-cmd)
