@@ -29,7 +29,7 @@
 
 (defmacro def-command (name path)
   `(progn
-     (defun ,(intern (format nil "~:@(~a~)%" name)) (&rest args)
+     (defun ,(intern (format nil "%~:@(~a~)" name)) (&rest args)
        #+nil
        (sh-sync "~a~{ ~a~}" ,path
                 (collect 'list (ensure-sh-arg (scan 'list args))))
@@ -54,7 +54,7 @@
              `(def-command ,(file-namestring path) ,path)))))
 
 (def-commands "~/local/opt/ec2-api-tools/bin/")
-;;(ec2ver%)
+;;(%ec2ver)
 ;;=> T
 ;;   0
 ;;   "1.5.2.5 2012-03-01
@@ -65,7 +65,7 @@
 ;;   "
 
 (def-commands "~/local/opt/AutoScaling/bin/")
-;;(as-cmd%)
+;;(%as-cmd)
 ;;(as-cmd)
 
 
