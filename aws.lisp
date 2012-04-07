@@ -87,3 +87,32 @@
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
+
+(defun update-launch-confgi (auto-scaling-group-name ami-id
+                             &key (instance-type "c1.medium")
+                               (group "web-server")
+                               (region "ap-northeast-1")
+                               (key "actindi"))
+  "オートスケールの AMI を変更する。"
+  (let ((new-launch-config (format nil "lc-~(~a~)" (uuid:make-v1-uuid))))
+    (as-create-launch-config new-launch-config
+                             :image-id ami-id
+                             :instance-type instance-type
+                             :group group
+                             :region region
+                             :key key)
+    (multiple-value-bind (ok exit-code stdout)
+        (as-describe-auto-scaling-groups :show-empty-fields "outing-grp")
+      (declare (ignore ok exit-code))
+      (ppcre:register-groups-bind (old-launch-config)
+          ("AUTO-SCALING-GROUP\\s+\\S+\\s+(\\S+)" stdout)
+
+        (as-update-auto-scaling-group auto-scaling-group-name
+                                      :launch-configuration new-launch-config)
+        (as-delete-launch-config old-launch-config :force)))
+    (values
+     (multiple-value-list (as-describe-launch-configs :region region))
+     (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
+
+
+

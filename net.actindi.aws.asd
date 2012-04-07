@@ -8,4 +8,5 @@
                alexandria
                bordeaux-threads
                cl-ppcre
-               trivial-shell))
+               trivial-shell
+               uuid))
