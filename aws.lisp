@@ -73,26 +73,21 @@
   "指定したインスタンスの EBS のスナップショットをとって AMI を作る。"
   (let (kernel-id)
     (labels ((volume-id (instance-id)
-               (multiple-value-bind (ok exit-code stdout)
-                   (ec2-describe-instances :show-empty-fields instance-id)
-                 (declare (ignore ok exit-code))
-                 (ppcre:register-groups-bind ($kernel-id $volume-id)
-                     ((ppcre:create-scanner
-                       "INSTANCE\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+).*BLOCKDEVICE\\s+\\S+\\s+(\\S+)"
-                       :single-line-mode t)
-                      stdout)
-                   (setf kernel-id $kernel-id)
-                   $volume-id)))
+               (ppcre:register-groups-bind ($kernel-id $volume-id)
+                   ((ppcre:create-scanner
+                     "INSTANCE\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+).*BLOCKDEVICE\\s+\\S+\\s+(\\S+)"
+                     :single-line-mode t)
+                    (ec2-describe-instances :show-empty-fields instance-id))
+                 (setf kernel-id $kernel-id)
+                 $volume-id))
              (make-snapshot (volume-id)
-               (multiple-value-bind (ok exit-code stdout)
-                   (ec2-create-snapshot
-                    :show-empty-fields
-                    :d (format nil "\"~a(app) ~a\"" instance-id volume-id)
-                    volume-id)
-                 (declare (ignore ok exit-code))
-                 (ppcre:register-groups-bind (snapshot-id)
-                     ("SNAPSHOT\\s+(\\S+)" stdout)
-                   snapshot-id)))
+               (ppcre:register-groups-bind (snapshot-id)
+                   ("SNAPSHOT\\s+(\\S+)"
+                    (ec2-create-snapshot
+                     :show-empty-fields
+                     :d (format nil "\"~a(app) ~a\"" instance-id volume-id)
+                     volume-id))
+                 snapshot-id))
              (make-ami (snapshot-id)
                (ec2-register
                 :n "\"app-`date +\\%Y-\\%m-\\%d-\\%H-\\%M-\\%S`\""
@@ -104,6 +99,7 @@
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
+;;(make-ami-from-instance "i-e7f775e7")
 
 (defun update-launch-confgi (auto-scaling-group-name ami-id
                              &key (instance-type "c1.medium")
