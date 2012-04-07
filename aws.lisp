@@ -75,7 +75,7 @@
     (labels ((volume-id (instance-id)
                (ppcre:register-groups-bind ($kernel-id $volume-id)
                    ((ppcre:create-scanner
-                     "INSTANCE\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+).*BLOCKDEVICE\\s+\\S+\\s+(\\S+)"
+                     "INSTANCE\\s+(?:\\S+\\s+){11}(\\S+).*BLOCKDEVICE\\s+\\S+\\s+(\\S+)"
                      :single-line-mode t)
                     (ec2-describe-instances :show-empty-fields instance-id))
                  (setf kernel-id $kernel-id)
