@@ -102,7 +102,7 @@
                              :region region
                              :key key)
     (multiple-value-bind (ok exit-code stdout)
-        (as-describe-auto-scaling-groups :show-empty-fields "outing-grp")
+        (as-describe-auto-scaling-groups :show-empty-fields auto-scaling-group-name)
       (declare (ignore ok exit-code))
       (ppcre:register-groups-bind (old-launch-config)
           ("AUTO-SCALING-GROUP\\s+\\S+\\s+(\\S+)" stdout)
