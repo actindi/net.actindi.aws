@@ -28,12 +28,24 @@
     (t arg)))
 
 (defmacro def-command (name path)
-  `(defun ,(intern (string-upcase name)) (&rest args)
-     #+nil
-     (sh-sync "~a~{ ~a~}" ,path
-              (collect 'list (ensure-sh-arg (scan 'list args))))
-     (sh "~a~{ ~a~}" ,path
-         (collect 'list (ensure-sh-arg (scan 'list args))))))
+  `(progn
+     (defun ,(intern (format nil "~:@(~a~)%" name)) (&rest args)
+       #+nil
+       (sh-sync "~a~{ ~a~}" ,path
+                (collect 'list (ensure-sh-arg (scan 'list args))))
+       (sh "~a~{ ~a~}" ,path
+           (collect 'list (ensure-sh-arg (scan 'list args)))))
+     (defun ,(intern (format nil "~:@(~a~)" name)) (&rest args)
+       (multiple-value-bind (ok exit-code stdout stderr)
+           (sh "~a~{ ~a~}" ,path
+               (collect 'list (ensure-sh-arg (scan 'list args))))
+         (unless ok
+           (error "~a is failed!~%exit: ~a~%~a~%~a"
+                  (format nil "~a~{ ~a~}"
+                          ,path
+                          (collect 'list (ensure-sh-arg (scan 'list args))))
+                  exit-code stdout stderr))
+         stdout))))
 
 (defmacro def-commands (bin-directory)
   `(progn
@@ -42,15 +54,20 @@
              `(def-command ,(file-namestring path) ,path)))))
 
 (def-commands "~/local/opt/ec2-api-tools/bin/")
-;;(ec2ver)
+;;(ec2ver%)
 ;;=> T
 ;;   0
 ;;   "1.5.2.5 2012-03-01
 ;;   "
 ;;   ""
+;;(ec2ver)
+;;=> "1.5.2.5 2012-03-01
+;;   "
 
 (def-commands "~/local/opt/AutoScaling/bin/")
+;;(as-cmd%)
 ;;(as-cmd)
+
 
 (defun make-ami-from-instance (instance-id)
   "指定したインスタンスの EBS のスナップショットをとって AMI を作る。"
@@ -92,27 +109,35 @@
                              &key (instance-type "c1.medium")
                                (group "web-server")
                                (region "ap-northeast-1")
-                               (key "actindi"))
+                               (key "actindi")
+                               (launch-config-name "outing-lc"))
   "オートスケールの AMI を変更する。"
   (let ((new-launch-config (format nil "lc-~(~a~)" (uuid:make-v1-uuid))))
     (as-create-launch-config new-launch-config
                              :image-id ami-id
                              :instance-type instance-type
                              :group group
-                             :region region
-                             :key key)
-    (multiple-value-bind (ok exit-code stdout)
-        (as-describe-auto-scaling-groups :show-empty-fields auto-scaling-group-name)
-      (declare (ignore ok exit-code))
-      (ppcre:register-groups-bind (old-launch-config)
-          ("AUTO-SCALING-GROUP\\s+\\S+\\s+(\\S+)" stdout)
-
-        (as-update-auto-scaling-group auto-scaling-group-name
-                                      :launch-configuration new-launch-config)
-        (as-delete-launch-config old-launch-config :force)))
+                             :key key
+                             :region region)
+    (ppcre:register-groups-bind (old-launch-config)
+        ("AUTO-SCALING-GROUP\\s+\\S+\\s+(\\S+)"
+         (as-describe-auto-scaling-groups :show-empty-fields auto-scaling-group-name
+                                          :region region))
+      (as-update-auto-scaling-group auto-scaling-group-name
+                                    :launch-configuration new-launch-config
+                                    :region region)
+      (as-delete-launch-config old-launch-config :force :region region))
+    (as-create-launch-config launch-config-name
+                             :image-id ami-id
+                             :instance-type instance-type
+                             :group group
+                             :key key
+                             :region region)
+    (as-update-auto-scaling-group auto-scaling-group-name
+                                  :launch-configuration launch-config-name
+                                  :region region)
+    (as-delete-launch-config new-launch-config :force :region region)
     (values
      (multiple-value-list (as-describe-launch-configs :region region))
      (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
-
-
-
+;; (update-launch-confgi "outing-grp" "ami-0c28990d")
