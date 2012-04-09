@@ -95,11 +95,15 @@
                 :root-device-name "/dev/sda1"
                 :a "x86_64"
                 :kernel kernel-id
-                :b (format nil "/dev/sda=~a" snapshot-id))))
+                :b (format nil "/dev/sda=~a" snapshot-id)
+                :b "/dev/sdc=ephemeral0")))
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
-;;(make-ami-from-instance "i-e7f775e7")
+;;(make-ami-from-instance "i-f37af5f3")
+;;=> "IMAGE	ami-0a12a30b
+;;   "
+
 
 (defun update-launch-confgi (auto-scaling-group-name ami-id
                              &key (instance-type "c1.medium")
@@ -136,4 +140,10 @@
     (values
      (multiple-value-list (as-describe-launch-configs :region region))
      (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
-;; (update-launch-confgi "outing-grp" "ami-0c28990d")
+;; (update-launch-confgi "outing-grp" "ami-0a12a30b")
+;;=> ("LAUNCH-CONFIG  outing-lc  ami-0a12a30b  c1.medium
+;;   ")
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  1  2  1
+;;   INSTANCE  i-d172fdd1  ap-northeast-1a  InService  Healthy
+;;   ")
+
