@@ -81,13 +81,16 @@
                  (setf kernel-id $kernel-id)
                  $volume-id))
              (make-snapshot (volume-id)
-               (ppcre:register-groups-bind (snapshot-id)
-                   ("SNAPSHOT\\s+(\\S+)"
-                    (ec2-create-snapshot
-                     :show-empty-fields
-                     :d (format nil "\"~a(app) ~a\"" instance-id volume-id)
-                     volume-id))
-                 snapshot-id))
+               (prog1
+                   (ppcre:register-groups-bind (snapshot-id)
+                       ("SNAPSHOT\\s+(\\S+)"
+                        (ec2-create-snapshot
+                         :show-empty-fields
+                         :d (format nil "\"~a(app) ~a\"" instance-id volume-id)
+                         volume-id))
+                     snapshot-id)
+                 ;; TODO ちゃんとした wait
+                 (dotimes (i 60) (princ ".") (force-output) (sleep 1))))
              (make-ami (snapshot-id)
                (ec2-register
                 :n "\"app-`date +\\%Y-\\%m-\\%d-\\%H-\\%M-\\%S`\""
@@ -100,8 +103,8 @@
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
-;;(make-ami-from-instance "i-f37af5f3")
-;;=> "IMAGE	ami-0a12a30b
+;;(make-ami-from-instance "i-a354c2a3")
+;;=> "IMAGE	ami-ceeb5bcf
 ;;   "
 
 
@@ -140,10 +143,8 @@
     (values
      (multiple-value-list (as-describe-launch-configs :region region))
      (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
-;; (update-launch-confgi "outing-grp" "ami-0a12a30b")
-;;=> ("LAUNCH-CONFIG  outing-lc  ami-0a12a30b  c1.medium
+;; (update-launch-confgi "outing-grp" "ami-ceeb5bcf")
+;;=> ("LAUNCH-CONFIG  outing-lc  ami-ceeb5bcf  c1.medium
 ;;   ")
-;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  1  2  1
-;;   INSTANCE  i-d172fdd1  ap-northeast-1a  InService  Healthy
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  0  0
 ;;   ")
-
