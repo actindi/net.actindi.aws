@@ -103,11 +103,10 @@
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
-;;(make-ami-from-instance "i-050c9205")
-;;-> ............................................................
-;;=> "IMAGE	ami-44a01045
+;;(make-ami-from-instance "i-6a709669")
+;→> ............................................................
+;⇒ "IMAGE	ami-3ad5693b
 ;;   "
-
 
 
 (defun update-launch-confgi (auto-scaling-group-name ami-id
@@ -145,11 +144,8 @@
     (values
      (multiple-value-list (as-describe-launch-configs :region region))
      (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
-;; (update-launch-confgi "outing-grp" "ami-44a01045")
-;;=> ("LAUNCH-CONFIG  outing-lc  ami-44a01045  c1.medium
+;; (update-launch-confgi "outing-grp" "ami-3ad5693b")
+;⇒ ("LAUNCH-CONFIG  outing-lc  ami-3ad5693b  c1.medium
 ;;   ")
-;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  1  5  2
-;;   INSTANCE  i-33f96633  ap-northeast-1a  InService  Healthy
-;;   INSTANCE  i-4979e749  ap-northeast-1a  InService  Healthy
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  10  0
 ;;   ")
-
