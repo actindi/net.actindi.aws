@@ -81,16 +81,16 @@
                  (setf kernel-id $kernel-id)
                  $volume-id))
              (make-snapshot (volume-id)
-               (prog1
-                   (ppcre:register-groups-bind (snapshot-id)
-                       ("SNAPSHOT\\s+(\\S+)"
-                        (ec2-create-snapshot
-                         :show-empty-fields
-                         :d (format nil "\"~a(app) ~a\"" instance-id volume-id)
-                         volume-id))
-                     snapshot-id)
-                 ;; TODO ちゃんとした wait
-                 (dotimes (i 60) (princ ".") (force-output) (sleep 1))))
+               (ppcre:register-groups-bind (snapshot-id)
+                   ("SNAPSHOT\\s+(\\S+)"
+                    (ec2-create-snapshot
+                     :show-empty-fields
+                     :d (format nil "\"~a(app) ~a\"" instance-id volume-id)
+                     volume-id))
+                 (loop for out = (ec2-describe-snapshots snapshot-id)
+                       until (search "completed" out)
+                       do (sleep 10))
+                 snapshot-id))
              (make-ami (snapshot-id)
                (ec2-register
                 :n "\"app-`date +\\%Y-\\%m-\\%d-\\%H-\\%M-\\%S`\""
@@ -103,14 +103,13 @@
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
-;;(make-ami-from-instance "i-6a709669")
-;→> ............................................................
-;⇒ "IMAGE	ami-3ad5693b
+;;(make-ami-from-instance "i-db4b10de")
+;;⇒ "IMAGE	ami-57b5d456
 ;;   "
 
 
 (defun update-launch-confgi (auto-scaling-group-name ami-id
-                             &key (instance-type "c1.medium")
+                             &key (instance-type "c3.large")
                                (group "web-server")
                                (region "ap-northeast-1")
                                (key "actindi")
@@ -144,8 +143,12 @@
     (values
      (multiple-value-list (as-describe-launch-configs :region region))
      (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
-;; (update-launch-confgi "outing-grp" "ami-3ad5693b")
-;⇒ ("LAUNCH-CONFIG  outing-lc  ami-3ad5693b  c1.medium
+;; (update-launch-confgi "outing-grp" "ami-57b5d456")
+;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-57b5d456  c3.large
 ;;   ")
-;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  10  0
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  4
+;;   INSTANCE  i-e7e7a6e2  ap-northeast-1a  InService  Healthy
+;;   INSTANCE  i-ace7a6a9  ap-northeast-1a  InService  Healthy
+;;   INSTANCE  i-55bd6950  ap-northeast-1a  InService  Healthy
+;;   INSTANCE  i-24f93b21  ap-northeast-1a  InService  Healthy
 ;;   ")
