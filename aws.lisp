@@ -146,9 +146,12 @@
 ;; (update-launch-confgi "outing-grp" "ami-57b5d456")
 ;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-57b5d456  c3.large
 ;;   ")
-;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  4
-;;   INSTANCE  i-e7e7a6e2  ap-northeast-1a  InService  Healthy
-;;   INSTANCE  i-ace7a6a9  ap-northeast-1a  InService  Healthy
-;;   INSTANCE  i-55bd6950  ap-northeast-1a  InService  Healthy
-;;   INSTANCE  i-24f93b21  ap-northeast-1a  InService  Healthy
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  0
+;;   ")
+
+;; 2013-12-12 c3.large が売り切れっぽいので一時的に c1.medium にします。
+;; (update-launch-confgi "outing-grp" "ami-57b5d456" :instance-type "c1.medium")
+;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-57b5d456  c1.medium
+;;   ")
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  0
 ;;   ")
