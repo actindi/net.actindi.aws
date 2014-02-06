@@ -103,8 +103,8 @@
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
-;;(make-ami-from-instance "i-db4b10de")
-;;⇒ "IMAGE	ami-57b5d456
+;;(make-ami-from-instance "i-54218c52")
+;;⇒ "IMAGE	ami-136b0112
 ;;   "
 
 
@@ -143,15 +143,9 @@
     (values
      (multiple-value-list (as-describe-launch-configs :region region))
      (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
-;; (update-launch-confgi "outing-grp" "ami-57b5d456")
-;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-57b5d456  c3.large
+;; (update-launch-confgi "outing-grp" "ami-136b0112")
+;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-136b0112  c3.large
 ;;   ")
-;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  0
-;;   ")
-
-;; 2013-12-12 c3.large が売り切れっぽいので一時的に c1.medium にします。
-;; (update-launch-confgi "outing-grp" "ami-57b5d456" :instance-type "c1.medium")
-;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-57b5d456  c1.medium
-;;   ")
-;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  0
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  1
+;;   INSTANCE  i-0733af00  ap-northeast-1a  InService  Healthy
 ;;   ")
