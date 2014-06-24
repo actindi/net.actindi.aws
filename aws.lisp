@@ -75,7 +75,7 @@
     (labels ((volume-id (instance-id)
                (ppcre:register-groups-bind ($kernel-id $volume-id)
                    ((ppcre:create-scanner
-                     "INSTANCE\\s+(?:\\S+\\s+){11}(\\S+).*BLOCKDEVICE\\s+\\S+\\s+(\\S+)"
+                     "INSTANCE\\t(?:[^\\t]+\\t){11}([^\\t]+).*BLOCKDEVICE\\s+[^\\t]+\\s+([^\\t]+)"
                      :single-line-mode t)
                     (ec2-describe-instances :show-empty-fields instance-id))
                  (setf kernel-id $kernel-id)
@@ -103,8 +103,8 @@
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
-;;(make-ami-from-instance "i-54218c52")
-;;⇒ "IMAGE	ami-136b0112
+;;(make-ami-from-instance "i-4da1f74b")
+;;⇒ "IMAGE	ami-11521c10
 ;;   "
 
 
@@ -143,9 +143,11 @@
     (values
      (multiple-value-list (as-describe-launch-configs :region region))
      (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
-;; (update-launch-confgi "outing-grp" "ami-136b0112")
-;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-136b0112  c3.large
+;; (update-launch-confgi "outing-grp" "ami-11521c10" :instance-type "c3.xlarge")
+;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-11521c10  c3.xlarge
 ;;   ")
-;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  1
-;;   INSTANCE  i-0733af00  ap-northeast-1a  InService  Healthy
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  2
+;;   INSTANCE  i-cb7d2bcd  ap-northeast-1a  InService  Healthy
+;;   INSTANCE  i-5ca0f65a  ap-northeast-1a  InService  Healthy
+;;   TAG  outing-grp  auto-scaling-group  name  app  true
 ;;   ")
