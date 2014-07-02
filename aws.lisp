@@ -103,8 +103,9 @@
       (make-ami
        (make-snapshot
         (volume-id instance-id))))))
-;;(make-ami-from-instance "i-4da1f74b")
-;;⇒ "IMAGE	ami-11521c10
+;; wheezy
+;;(make-ami-from-instance "i-45b29643")
+;;⇒ "IMAGE	ami-3f9cd63e
 ;;   "
 
 
@@ -143,11 +144,11 @@
     (values
      (multiple-value-list (as-describe-launch-configs :region region))
      (multiple-value-list (as-describe-auto-scaling-groups auto-scaling-group-name :region region)))))
-;; (update-launch-confgi "outing-grp" "ami-11521c10" :instance-type "c3.xlarge")
-;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-11521c10  c3.xlarge
+;; wheezy
+;; (update-launch-confgi "outing-grp" "ami-3f9cd63e" :instance-type "c3.xlarge")
+;;⇒ ("LAUNCH-CONFIG  outing-lc  ami-3f9cd63e  c3.xlarge
 ;;   ")
-;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  0  20  2
-;;   INSTANCE  i-cb7d2bcd  ap-northeast-1a  InService  Healthy
-;;   INSTANCE  i-5ca0f65a  ap-northeast-1a  InService  Healthy
+;;   ("AUTO-SCALING-GROUP  outing-grp  outing-lc  ap-northeast-1a  outing  1  20  1
+;;   INSTANCE  i-93bc9895  ap-northeast-1a  InService  Healthy
 ;;   TAG  outing-grp  auto-scaling-group  name  app  true
 ;;   ")
